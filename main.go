@@ -32,8 +32,13 @@ func getList(id int) {
     wenku8url := "http://www.wenku8.cn/wap/article/packtxt.php?id=%d"
     url := fmt.Sprintf(wenku8url, id)
     content := getContent(url)
-    r, _ := regexp.Compile(`<card id="packtxt\.php" title="[^\(]+\(([^\)]+)\)`)
+    r, _ := regexp.Compile(`《<a href="articleinfo\.php\?id=[0-9]+">(.*)?</a>`)
     title := utils.S2T(strings.TrimSpace(r.FindStringSubmatch(content)[1]))
+
+    if (strings.Contains(title, "(")) {
+        r, _ := regexp.Compile(`[^\(]+\(([^\)]+)\)`)
+        title = r.FindStringSubmatch(content)[1]
+    }
 
     r, _ = regexp.Compile(`(.*)<br/>(\r\n|\r|\n)\(`)
     categories := r.FindAllStringSubmatch(content, -1)

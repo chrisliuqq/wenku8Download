@@ -22,7 +22,10 @@ func main() {
 
     fmt.Print("請輸入小說編號：")
     fmt.Scan(&id)
-
+    if (id <= 0) {
+        fmt.Println("錯誤的小說編號")
+        os.Exit(1)
+    }
     getList(id)
 }
 
@@ -57,7 +60,9 @@ func getList(id int) {
     for k, v := range categories {
         fmt.Printf("%s：%s\n", v[1], strings.Replace(urls[k][1], "&amp;", "&", -1))
         novelSavePath = fmt.Sprintf("%s/%02d - %s.txt", savePath, k+1, utils.S2T(strings.TrimSpace(v[1])))
-
+        if (fileExists(novelSavePath) == true) {
+            continue
+        }
         stringBytes = []byte(getContent(strings.Replace(urls[k][1], "&amp;", "&", -1)))
         ioutil.WriteFile(novelSavePath, stringBytes, 0644)
     }
@@ -82,6 +87,13 @@ func getContent(url string) string {
     }
 
     return ""
+}
+
+func fileExists(path string) bool {
+    if _, err := os.Stat(path); os.IsNotExist(err) {
+        return false
+    }
+    return true
 }
 
 func createFolder(path string) {

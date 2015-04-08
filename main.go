@@ -7,14 +7,17 @@ import (
     "os"
     "regexp"
     "strings"
-    // "path/filepath"
+    "path/filepath"
     "./utils"
+    "github.com/spf13/viper"
 )
 
 type novel struct {
     title string
     url string
 }
+
+var wenku8url string = "http://www.wenku8.cn/wap/article/packtxt.php?id=%d"
 
 func main() {
     // http://www.wenku8.cn/wap/article/packtxt.php?id=1159
@@ -31,8 +34,19 @@ func main() {
 
 // func getList(id int) (string, string) {
 func getList(id int) {
-    saveRootPath := "/Users/chrisliu/Downloads"
-    wenku8url := "http://www.wenku8.cn/wap/article/packtxt.php?id=%d"
+
+    workingDir := getCurrentDir()
+    viper.SetConfigName("config")
+    viper.AddConfigPath(workingDir)
+    err := viper.ReadInConfig()
+
+    if err != nil {
+        fmt.Println("No configuration file loaded - using defaults")
+    }
+
+    viper.SetDefault("SaveRootPath", "/Users/chrisliu/Downloads")
+    saveRootPath := viper.GetString("SaveRootPath")
+
     url := fmt.Sprintf(wenku8url, id)
     content := getContent(url)
     r, _ := regexp.Compile(`《<a href="articleinfo\.php\?id=[0-9]+">(.*)?</a>`)
@@ -101,6 +115,14 @@ func createFolder(path string) {
         msg(fmt.Sprintf("建立資料夾：%s", path))
         os.Mkdir(path, 0755)
     }
+}
+
+func getCurrentDir() string {
+    dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+    if err != nil {
+        fmt.Printf("%s", err)
+    }
+    return dir
 }
 
 func msg(msg string) {
